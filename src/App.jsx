@@ -24,8 +24,7 @@ function App() {
       formData.append("objectives", "Learn main ideas"); // You could add state for this
       formData.append("interactive", interactive);
 
-      const host = window.location.hostname;
-      const response = await fetch(`http://${host}:8000/generate-presentation`, {
+      const response = await fetch("https://lesson-planner-of3b.onrender.com/generate-presentation", {
         method: "POST",
         body: formData,
       });
