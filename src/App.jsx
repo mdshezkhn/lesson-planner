@@ -9,6 +9,17 @@ function App() {
   const [file, setFile] = useState(null);
   const fileInputRef = useRef(null);
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      setFile(e.dataTransfer.files[0]);
+    }
+  };
+
   const categories = ['Grammar', 'Reading', 'Speaking', 'Writing', 'Phonics', 'Science'];
 
   const toggleCategory = (cat) => {
@@ -63,7 +74,13 @@ function App() {
         <label className="form-label">
           <span>📄</span> Upload
         </label>
-        <div className="upload-zone" onClick={() => fileInputRef.current?.click()} style={{cursor: "pointer"}}>
+        <div 
+          className="upload-zone" 
+          onClick={() => fileInputRef.current?.click()} 
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          style={{cursor: "pointer"}}
+        >
           <input 
             type="file" 
             style={{display: "none"}} 
