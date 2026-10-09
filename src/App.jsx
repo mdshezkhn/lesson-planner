@@ -1,9 +1,13 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import './App.css'
 
 function App() {
   const [selectedCategories, setSelectedCategories] = useState(['Reading']);
   const [interactive, setInteractive] = useState(true);
+  const [gradeLevel, setGradeLevel] = useState("Kindergarten");
+  const [objectives, setObjectives] = useState("");
+  const [file, setFile] = useState(null);
+  const fileInputRef = useRef(null);
 
   const categories = ['Grammar', 'Reading', 'Speaking', 'Writing', 'Phonics', 'Science'];
 
@@ -19,10 +23,13 @@ function App() {
     try {
       // Show loading indicator in a real app
       const formData = new FormData();
-      formData.append("gradeLevel", "5th Grade"); // You could add state for this
+      formData.append("gradeLevel", gradeLevel);
       formData.append("categories", selectedCategories.join(", "));
-      formData.append("objectives", "Learn main ideas"); // You could add state for this
+      formData.append("objectives", objectives);
       formData.append("interactive", interactive);
+      if (file) {
+        formData.append("file", file);
+      }
 
       const response = await fetch("https://lesson-planner-of3b.onrender.com/generate-presentation", {
         method: "POST",
@@ -56,9 +63,16 @@ function App() {
         <label className="form-label">
           <span>📄</span> Upload
         </label>
-        <div className="upload-zone">
+        <div className="upload-zone" onClick={() => fileInputRef.current?.click()} style={{cursor: "pointer"}}>
+          <input 
+            type="file" 
+            style={{display: "none"}} 
+            ref={fileInputRef} 
+            onChange={(e) => setFile(e.target.files?.[0] || null)} 
+            accept=".pdf,.pptx,.docx" 
+          />
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-          <p className="upload-title">Drag & Drop or Click to Upload</p>
+          <p className="upload-title">{file ? file.name : "Drag & Drop or Click to Upload"}</p>
           <p className="upload-subtitle">Previous Year Presentation/Worksheets</p>
           <p className="upload-subtitle">(supports PDF, PPTX, DOCX)</p>
         </div>
@@ -68,7 +82,7 @@ function App() {
         <label className="form-label">
           <span>🎓</span> Grade Level
         </label>
-        <select className="form-select">
+        <select className="form-select" value={gradeLevel} onChange={(e) => setGradeLevel(e.target.value)}>
           <option>Kindergarten</option>
           <option>1st Grade</option>
           <option>2nd Grade</option>
@@ -102,6 +116,8 @@ function App() {
         </label>
         <textarea 
           className="form-textarea" 
+          value={objectives}
+          onChange={(e) => setObjectives(e.target.value)}
           placeholder="Describe your main objectives for the new lesson...&#10;e.g., Learn to identify and use main ideas and supporting details in a text."
         ></textarea>
       </div>
