@@ -110,6 +110,7 @@ function App() {
   const [includeNew, setIncludeNew] = useState(true)
   const [illustrations, setIllustrations] = useState([])
   const [illustrating, setIllustrating] = useState(false)
+  const [illoProgress, setIlloProgress] = useState(null) // { i, n, title }
   const [skipIllo, setSkipIllo] = useState({}) // title -> true = excluded from the deck
   const [mode, setMode] = useState('edit')
   const [generating, setGenerating] = useState(false)
@@ -191,24 +192,40 @@ function App() {
     setError('')
     setIllustrating(true)
     try {
-      const fd = new FormData()
-      fd.append('report', JSON.stringify(report))
-      fd.append('accessCode', accessCode)
-      fd.append('gradeLevel', gradeLevel)
-      fd.append('categories', selectedCategories.join(', '))
-      fd.append('maxImages', '3')
-      const res = await fetch(`${API}/illustrate`, { method: 'POST', body: fd })
-      if (!res.ok) {
-        const detail = (await res.json().catch(() => ({}))).detail || res.statusText
-        throw new Error(res.status === 401 ? 'Invalid or missing access code.' : (typeof detail === 'string' ? detail : 'Illustration failed'))
+      // Illustrate EVERY content slide (not just the new ones), one /illustrate
+      // call per slide so each request stays inside the 60s function cap.
+      const slideTitles = (report.slides || [])
+        .filter((s) => s.verdict !== 'remove')
+        .map((s) => s.revised_title || s.title)
+        .filter(Boolean)
+      const newTitles = (report.new_slides || []).map((s) => s.title).filter(Boolean)
+      const wanted = [...new Set([...slideTitles, ...newTitles])].slice(0, 8)
+
+      const collected = []
+      for (let k = 0; k < wanted.length; k++) {
+        setIlloProgress({ i: k + 1, n: wanted.length, title: wanted[k] })
+        const fd = new FormData()
+        fd.append('report', JSON.stringify(report))
+        fd.append('accessCode', accessCode)
+        fd.append('gradeLevel', gradeLevel)
+        fd.append('categories', selectedCategories.join(', '))
+        fd.append('titles', wanted[k])
+        fd.append('maxImages', '1')
+        try {
+          const res = await fetch(`${API}/illustrate`, { method: 'POST', body: fd })
+          if (res.ok) {
+            const data = await res.json()
+            collected.push(...(data.illustrations || []))
+          }
+        } catch (_) { /* one failed slide must not kill the batch */ }
       }
-      const data = await res.json()
-      setIllustrations(data.illustrations || [])
+      setIllustrations(collected)
       setSkipIllo({})
     } catch (e) {
       setError(`Illustration failed: ${e.message}`)
     } finally {
       setIllustrating(false)
+      setIlloProgress(null)
     }
   }
 
@@ -736,9 +753,12 @@ function App() {
       <h3 className="section-title">🎨 Illustrations</h3>
       <div className="option-row">
         <button className="ghost-btn small" onClick={handleIllustrate} disabled={illustrating}>
-          {illustrating ? '🎨 Painting… (up to ~30s)' : illustrations.length ? '🎨 Regenerate illustrations' : '🎨 Generate illustrations for the new slides'}
+          {illustrating ? '🎨 Painting…' : illustrations.length ? '🎨 Regenerate illustrations' : '🎨 Add AI images to every slide'}
         </button>
-        {illustrations.length > 0 && (
+        {illoProgress && (
+          <span className="section-hint">🖼 image {illoProgress.i} of {illoProgress.n}{illoProgress.title ? ` — ${illoProgress.title}` : ''}…</span>
+        )}
+        {illustrations.length > 0 && !illustrating && (
           <span className="section-hint">untick any you don't want — ticked ones are embedded into the deck when you download</span>
         )}
       </div>
