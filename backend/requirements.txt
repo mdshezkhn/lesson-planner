@@ -1,6 +1,11 @@
 fastapi
-uvicorn
+uvicorn[standard]
 python-multipart
 python-pptx
-openai
+pypdf
+python-docx
+google-genai
 python-dotenv
+httpx
+
+olefile

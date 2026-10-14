@@ -1,0 +1,11 @@
+fastapi
+python-multipart
+python-pptx
+pypdf
+python-docx
+google-genai
+httpx
+python-dotenv
+
+olefile
+vercel

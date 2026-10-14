@@ -1,0 +1,32 @@
+# Render.com blueprint — deploys the Lesson Sync backend (FastAPI).
+# In Render: New + → Blueprint → pick the repo (or use the Deploy to Render
+# button in the README). You'll be asked to fill the `sync: false` values.
+services:
+  - type: web
+    name: lesson-sync-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false       # paste your Google AI Studio key (same as backend/.env)
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: OPENROUTER_API_KEY
+        sync: false       # free: https://openrouter.ai/keys — enables :free models
+      - key: NVIDIA_API_KEY
+        sync: false       # free credits: https://build.nvidia.com
+      - key: ZHIPU_API_KEY
+        sync: false       # China-direct, no VPN: https://open.bigmodel.cn (glm-5.3-flash = free)
+      - key: GROQ_API_KEY
+        sync: false       # free tier: https://console.groq.com/keys
+      - key: APP_ACCESS_CODE
+        sync: false       # admin (Teacher Mo) password, e.g. teach-2026 — type it in the app's 🔒 field
+      - key: APP_USERS
+        sync: false       # colleague logins as JSON: [{"name":"Fatima","code":"fat-7K2M"}]
+      - key: ALLOWED_ORIGINS
+        value: "https://mdshezkhn.github.io,https://lesson-sync-mo.vercel.app,https://lesson-sync-henna.vercel.app,https://lesson-sync-teacher-mo.vercel.app"
+      - key: MAX_UPLOAD_MB
+        value: "30"

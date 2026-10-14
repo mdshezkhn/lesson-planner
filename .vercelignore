@@ -1,0 +1,16 @@
+# Never ship local secrets/dev artifacts in deployment bundles.
+# (The Vercel CLI does not always honor .gitignore for function bundles.)
+.env
+.env.*
+backend/.env
+backend/.env.*
+*.log
+__pycache__/
+**/__pycache__/
+.venv/
+node_modules/
+dist/
+.vercel/
+backend/test_uploads/
+backend/uploads/
+backend/samples/out_*

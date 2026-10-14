@@ -30,6 +30,11 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          # Backend base URL (Render FastAPI). Set it as a repo *variable*:
+          # Settings → Secrets and variables → Actions → Variables → VITE_API_URL
+          # e.g. https://lesson-sync-api.onrender.com  (no trailing slash)
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

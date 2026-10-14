@@ -1,0 +1,41 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/analyze",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/illustrate",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/generate",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/health",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/upload-chunk",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/login",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/users",
+      "destination": "/api/index"
+    }
+  ],
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 60
+    }
+  }
+}
